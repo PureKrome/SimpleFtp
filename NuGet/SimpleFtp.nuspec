@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>SimpleFtp</id>
+        <version>0.0.0</version>
+        <title>SimpleFtp</title>
+        <authors>Pure Krome</authors>
+        <owners>Pure Krome</owners>
+        <licenseUrl>https://raw.githubusercontent.com/SimpleFtp/SimpleFtp/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/SimpleFtp/SimpleFtp</projectUrl>
+        <iconUrl>http://i.imgur.com/bR4Yf.jpg</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A simple Ftp library which includes an interface and a simplified api. It's easy to think this is just a glorified wrapper around WebClient ... but it's actually useful!</description>
+        <summary>A simple Ftp library.</summary>
+        <copyright>2016</copyright>
+        <language>en-AU</language>
+        <tags>ftp simpleftp worlddomination worldomination unicorn magicalunicorn magical-unicorn</tags>
+        <dependencies>
+            <dependency id="Serilog" version="1.5.14" />
+            <dependency id="Shouldly" version="2.6.0" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\Code\SimpleFtp\bin\Release\SimpleFtp.dll" target="lib\net45\SimpleFtp.dll" />
+    </files>
+</package>
