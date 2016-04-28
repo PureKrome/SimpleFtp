@@ -3,7 +3,7 @@
 |            | Production | Dev |
 | ----------:| ---------- | --- |
 | AppVeyor   | [![Build status](https://ci.appveyor.com/api/projects/status/v2fh87qglnn121ad/?svg=true)](https://ci.appveyor.com/project/PureKrome/simpleftp-8os3j) | [![Build status](https://ci.appveyor.com/api/projects/status/kxfqb2damdwohdu5?svg=true)](https://ci.appveyor.com/project/PureKrome/simpleftp)
-| NuGet      | [![NuGet Badge](https://buildstats.info/nuget/SimpleFtp)](https://www.nuget.org/packages/SimpleFtp/) | [![MyGet Badge](https://buildstats.info/myget/purekrome/SimpleFtp)](https://www.myget.org/feed/purekrome/package/nuget/SimpleFtp) |
+| NuGet      | [![NuGet Badge](https://buildstats.info/nuget/SimpleFtp)](https://www.nuget.org/packages/SimpleFtp/) | [![MyGet Badge](https://buildstats.info/myget/simpleftp/simpleftp)](https://www.myget.org/feed/simpleftp/package/nuget/simpleftp) |
 
 ---
 
