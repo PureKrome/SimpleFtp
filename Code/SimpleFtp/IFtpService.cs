@@ -7,6 +7,13 @@ namespace SimpleFtp
     public interface IFtpService
     {
         /// <summary>
+        /// Deletes a remote file from the ftp server.
+        /// </summary>
+        /// <param name="fileName">The file to remove.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        Task DeleteAsync(string fileName);
+
+        /// <summary>
         /// Uploads some simple string data to an Ftp Server.
         /// </summary>
         /// <param name="data">The content to upload.</param>
