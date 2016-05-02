@@ -11,6 +11,8 @@ namespace SimpleFtp
 {
     public class FtpService : IFtpService
     {
+        public delegate void UploadProgressHandler(UploadProgressArgs e);
+
         private readonly ILogger _loggingService;
         private readonly NetworkCredential _networkCredential;
         private readonly string _server;
@@ -33,6 +35,7 @@ namespace SimpleFtp
             // Defaults.
             UsePasive = true;
             KeepAlive = true;
+            FireUploadProgressEventEveryXBytes = 1024*1024; // 1MB.
         }
 
         public bool UsePasive { get; set; }
@@ -41,6 +44,13 @@ namespace SimpleFtp
         public bool UseBinary { get; set; }
         public IWebProxy Proxy { get; set; }
         public int? Timeout { get; set; }
+
+        /// <summary>
+        /// How many bytes need to uploaded for an UploadProgress event is fired?
+        /// </summary>
+        /// <remarks>The default is: 1Mb.</remarks>
+        public long FireUploadProgressEventEveryXBytes { get; set; }
+
 
         /// <summary>
         /// Deletes a remote file from the ftp server.
@@ -120,13 +130,20 @@ namespace SimpleFtp
             // Now start writing the request to the ftp server.
             using (var ftpStream = await ftpWebRequest.GetRequestStreamAsync())
             {
-                await inputStream.CopyToAsync(ftpStream);
+                await CopyToWithEvent(inputStream, ftpStream, FireUploadProgressEventEveryXBytes);
+
+                _loggingService.Debug("Closing service....");
+                ftpStream.Close();
+                _loggingService.Debug("Closed..");
             }
 
             stopwatch.Stop();
 
-            _loggingService.Information($"Successfully Ftp-uploaded {inputStream.Length.ToString("N0")} characters to {destinationUri.AbsoluteUri} in {stopwatch.Elapsed.ToString("g")}.");
+            _loggingService.Information(
+                $"Successfully Ftp-uploaded {inputStream.Length.ToString("N0")} characters to {destinationUri.AbsoluteUri} in {stopwatch.Elapsed.ToString("g")}.");
         }
+
+        public event UploadProgressHandler OnUploadProgress;
 
         private Uri GenerateDestinationUri(string fileName)
         {
@@ -146,12 +163,12 @@ namespace SimpleFtp
 
             _loggingService.Debug($"Ftp checking if the remote file exists -> destination: {destinationUri.AbsoluteUri}.");
 
-            var ftpWebRequest = (FtpWebRequest)WebRequest.Create(destinationUri);
+            var ftpWebRequest = (FtpWebRequest) WebRequest.Create(destinationUri);
             ftpWebRequest.Credentials = _networkCredential;
             ftpWebRequest.Method = WebRequestMethods.Ftp.GetDateTimestamp;
             try
             {
-                using ((FtpWebResponse)await ftpWebRequest.GetResponseAsync())
+                using ((FtpWebResponse) await ftpWebRequest.GetResponseAsync())
                 {
                     _loggingService.Information($"Finished checking remote file which exists!");
                 }
@@ -161,7 +178,7 @@ namespace SimpleFtp
                 _loggingService.Information($"Remote file doesn't exist - nothing to delete.");
                 return false;
             }
-            
+
 
             return true;
         }
@@ -172,12 +189,58 @@ namespace SimpleFtp
 
             _loggingService.Debug($"Ftp Deleteting a remote file -> destination: {destinationUri.AbsoluteUri}.");
 
-            var ftpWebRequest = (FtpWebRequest)WebRequest.Create(destinationUri);
+            var ftpWebRequest = (FtpWebRequest) WebRequest.Create(destinationUri);
             ftpWebRequest.Credentials = _networkCredential;
             ftpWebRequest.Method = WebRequestMethods.Ftp.DeleteFile;
-            using ((FtpWebResponse)await ftpWebRequest.GetResponseAsync())
+            using ((FtpWebResponse) await ftpWebRequest.GetResponseAsync())
             {
                 _loggingService.Information($"Finished deleting remote file -> {destinationUri.AbsoluteUri}.");
+            }
+        }
+        
+        private async Task CopyToWithEvent(Stream source,
+                                           Stream destination,
+                                           long fireEventAfterCopingBytes)
+        {
+            source.ShouldNotBeNull();
+            destination.ShouldNotBeNull();
+
+            var eventId = 0;
+            long totalBytesCopied = 0;
+            long currentBytesCopied = 0;
+            var buffer = new byte[4*1024];
+            int bytesRead;
+
+            _loggingService.Debug($" #### Source length: { source.Length}");
+
+            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead);
+
+                // Do we need to fire an event?
+                if (OnUploadProgress == null)
+                {
+                    continue;
+                }
+
+                totalBytesCopied += bytesRead;
+                currentBytesCopied += bytesRead;
+
+                // Partial progress report -or- final report.   
+                if (currentBytesCopied >= fireEventAfterCopingBytes ||
+                    totalBytesCopied == source.Length)
+                {
+                    // We have copied more-or-equal bytes to fire off an event.
+                    // So lets tell anyone the current event!
+                    OnUploadProgress(new UploadProgressArgs(++eventId, totalBytesCopied, currentBytesCopied, source.Length));
+
+                    currentBytesCopied = 0; // Reset.
+                }
+
+                if (totalBytesCopied >= source.Length)
+                {
+                    await destination.FlushAsync();
+                }
             }
         }
     }
