@@ -34,5 +34,8 @@ build:
 on_success:
   - ps: $destinationPath = $env:appveyor_build_folder + ".\file1.ps1"; (new-object net.webclient).DownloadFile('https://raw.githubusercontent.com/PureKrome/PushIt/master/NuGet%20Package%20and%20Publish.ps1', $destinationPath); & $destinationPath  -Version $env:appveyor_build_version -NuGet "C:\Tools\NuGet\nuget.exe" -feedSource $env:feedSource -apiKey $env:apiKey -source '.\NuGet\' -destination '.\NuGet\'
 
+on_finish:
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 cache:
   - packages -> **\packages.config
