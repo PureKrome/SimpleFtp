@@ -55,6 +55,7 @@
     <Compile Include="FtpService.cs" />
     <Compile Include="IFtpService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UploadProgressArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
