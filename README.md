@@ -17,9 +17,11 @@ This library is a simple interface and wrapper-class for the `System.Net.WebClie
 2. add some code to where u wish to use it
 
 ```
-
 // Note: safety checks, etc are obmitted for brevity.
 
+// --------------------------------
+// Create some service, which does some Ftp stuff.
+// --------------------------------
 private readonly IFtpService _ftpService;
 
 public SomeService(IFtpService ftpService)
@@ -27,20 +29,26 @@ public SomeService(IFtpService ftpService)
     _ftpService = ftpService;
 }
 
+// This is the method which will end up doing some Ftp stuff.
 public async Task SomeMethodAsync()
 {
     var someFileContent = "whatever";
     var someFileName = "whatever.txt";
 
+    // Boom! Money-shot.
     await _ftpService.UploadAsync(someFileContent, someFileName);
 }
 
 // --------------------------------
-
+// Lets now consume the service (which does some ftp stuff)
+// --------------------------------
+// Setup the service...
 var loggingService = new LoggingService();
 var ftpService = new FtpService("ftp.blahblah.com", "someUsername", "somePassword", loggingService);
 var someService = new SomeService(ftpService);
 
+// Execute your custom code, which ends up executing the underlying FTP method.
+await someService.SomeMethodAsync(); 
 ```
 
 Hope this helps!
